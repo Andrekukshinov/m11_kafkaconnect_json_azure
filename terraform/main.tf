@@ -1,6 +1,10 @@
 # Setup azurerm as a state backend
 terraform {
   backend "azurerm" {
+    resource_group_name  = "DataBricksHomeworks"
+    storage_account_name = "fortf2"
+    container_name       = "tfstate"
+    key                  = "root.terraform.tfstate"
   }
 }
 
@@ -16,7 +20,7 @@ resource "azurerm_resource_group" "bdcc" {
   location = var.LOCATION
 
   lifecycle {
-    prevent_destroy = true
+    prevent_destroy = false
   }
 
   tags = {
@@ -42,7 +46,7 @@ resource "azurerm_storage_account" "bdcc" {
   }
 
   lifecycle {
-    prevent_destroy = true
+    prevent_destroy = false
   }
 
   tags = {
@@ -59,7 +63,7 @@ resource "azurerm_storage_data_lake_gen2_filesystem" "gen2_data" {
   storage_account_id = azurerm_storage_account.bdcc.id
 
   lifecycle {
-    prevent_destroy = true
+    prevent_destroy = false
   }
 }
 
@@ -75,8 +79,8 @@ resource "azurerm_kubernetes_cluster" "bdcc" {
 
   default_node_pool {
     name       = "default"
-    node_count = 1
-    vm_size    = "Standard_D2_v2"
+    node_count = 2
+    vm_size    = "Standard_D11_v2"
   }
 
   identity {
@@ -96,4 +100,9 @@ output "client_certificate" {
 output "kube_config" {
   sensitive = true
   value = azurerm_kubernetes_cluster.bdcc.kube_config_raw
+}
+
+output "azure_acc_key" {
+  sensitive = true
+  value = azurerm_storage_account.bdcc.primary_access_key
 }
